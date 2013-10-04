@@ -160,8 +160,8 @@ read_command_stream (command_stream_t s)
 			struct command *andCom;
 			andCom = checked_malloc(sizeof(struct command));
 			andCom->type = AND_COMMAND;
-			andCom->command[0] = read_command_stream(curr->previous);
-			andCom->command[1] = read_command_stream(s);
+			andCom->u.command[0] = read_command_stream(curr->previous);
+			andCom->u.command[1] = read_command_stream(s);
 			andCom->status = -1;
 			andCom->input = 0;
 			andCom->output = 0;
@@ -257,6 +257,7 @@ read_command_stream (command_stream_t s)
 		}
 	}
 	curr = s;
+	int simpLength = 1;
 	while (curr != 0)
 	{
 		if (curr->x == '<')
@@ -303,7 +304,7 @@ read_command_stream (command_stream_t s)
                         redCom->status = 0;
                         return *redCom;
 		}
-                if (curr->x == '>')
+                else if (curr->x == '>')
                 {
                         struct command_stream leftCur = curr->previous;
                         struct command_stream rightCur = s;
@@ -347,14 +348,29 @@ read_command_stream (command_stream_t s)
                         redCom->status = 0;
                         return *redCom;
                 }
+		else
+		{
+			curr = curr->previous;
+			simpLength++;
+		}
 	}
 
-
-
-
-
-
-
-
-	return 0;
+		char *simpString = checked_malloc(simpLength + 2);
+                int indexS = 0;
+                while(curr != s)
+                {
+                	simpString[indexS] = curr->x;
+                        curr = curr->next;
+                        indexS++;
+                }
+                simpString[indexS] = curr->x;
+		char **wordS = simpString;
+                struct command *simpCom;
+                simpCom = checked_malloc(sizeof(struct command));
+                simpCom->type = SIMPLE_COMMAND;
+                simpCom->word = wordS;
+                simpCom->status = 0;
+                simpCom->input = 0;
+                simpCom->output = 0;
+                return *simpCom;
 } 
