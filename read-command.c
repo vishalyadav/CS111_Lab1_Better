@@ -157,18 +157,43 @@ read_command_stream (command_stream_t s)
                 else if (curr->x == '&' && curr->previous->x == '&')
                 {
                         curr->next->previous = 0;
-                        return rcsHelp (curr->previous, s, AND_COMMAND);
+			struct command *andCom;
+			andCom = checked_malloc(sizeof(struct command));
+			andCom->type = AND_COMMAND;
+			andCom->command[0] = read_command_stream(curr->previous);
+			andCom->command[1] = read_command_stream(s);
+			andCom->status = -1;
+			andCom->input = 0;
+			andCom->output = 0;
+                        return *andCom;
                 }
                 else if (curr ->x == '|' && curr->previous->x = '|')
                 {
                         curr->next->previous = 0;
-                        return rcsHelp (curr->previous, s, OR_COMMAND);
+                        struct command *orCom;
+                       	orCom = checked_malloc(sizeof(struct command));
+                        orCom->type = OR_COMMAND;
+                        orCom->command[0] = read_command_stream(curr->previous);
+                        orCom->command[1] = read_command_stream(s);
+                        orCom->status = -1;
+                        orCom->input = 0;
+                        orCom->output = 0;
+                        return *orCom;
+
 
                 }
                 else if (curr->x == ';' || curr->x == '\n')
                 {
                         curr->next->previous = 0;
-                        return rcsHelp (curr->previous, s, SEQUENCE_COMMAND);
+                        struct command *seqCom;
+                        seqCom = checked_malloc(sizeof(struct command));
+                        seqCom->type = SEQUENCE_COMMAND;
+                        seqCom->command[0] = read_command_stream(curr->previous);
+                        seqCom->command[1] = read_command_stream(s);
+                        seqCom->status = -1;
+                        seqCom->input = 0;
+                        seqCom->output = 0;
+                        return *seqCom;
                 }
                 else
                 {
@@ -195,14 +220,23 @@ read_command_stream (command_stream_t s)
 		else if (curr->x == '|')
 		{
                         curr->next->previous = 0;
-                        return rcsHelp (curr->previous, s, PIPE_COMMAND);
+                        struct command *pipeCom;
+                        pipeCom = checked_malloc(sizeof(struct command));
+                        pipeCom->type = PIPE_COMMAND;
+                        pipeCom->command[0] = read_command_stream(curr->previous);
+                        pipeCom->command[1] = read_command_stream(s);
+                        pipeCom->status = -1;
+                        pipeCom->input = 0;
+                        pipeCom->output = 0;
+                        return *pipeCom;
+
 		}
 		else
 		{
 			curr = curr->previous;
 		}
 	}
-	curr = s;
+	curr = s;	//maybe move this parentheses part to the end, after redirect and word
 	while (curr != 0)
 	{
                 if (curr->x == ')')
@@ -222,7 +256,98 @@ read_command_stream (command_stream_t s)
 			curr = curr->previous
 		}
 	}
+	curr = s;
 	while (curr != 0)
+	{
+		if (curr->x == '<')
+		{
+			struct command_stream leftCur = curr->previous;
+			struct command_stream rightCur = s;
+			struct command_stream leftTail = leftCur;
+			struct command_stream rightTail = rightCur;
+			int charNumLeft = 1;
+			int charNumRight = 1;
+			while (leftCur->previous != 0)
+			{
+				charNumLeft++;
+				leftCur = leftCur->previous;
+			}
+			char *leftString = checked_malloc(charNumLeft + 2);
+			int indexL = 0;
+			while(leftCur != leftTail)
+			{
+				leftString[indexL] = leftCur->x;
+				leftCur = leftCur->next;
+				indexL++;
+			}
+			leftString[indexL] = leftCur->x;
+                        while (rightCur->previous != 0)
+                        {
+                                charNumRight++;
+                                rightCur = rightCur->previous;
+                        }
+                        char *rightString = checked_malloc(charNumRight + 2);
+                        int indexR = 0;
+                        while(rightCur != rightTail)
+                        {                               
+                                rightString[indexR] = rightCur->x;
+                               	rightCur = rightCur->next;
+                                indexR++;
+                        }
+                        rightString[indexR] = rightCur->x;
+                        struct command *redCom;
+                        redCom = checked_malloc(sizeof(struct command));
+                        redCom->type = SIMPLE_COMMAND;
+                        redCom->input = rightString;
+			redCom->output = leftString;
+                        redCom->status = 0;
+                        return *redCom;
+		}
+                if (curr->x == '>')
+                {
+                        struct command_stream leftCur = curr->previous;
+                        struct command_stream rightCur = s;
+                        struct command_stream leftTail = leftCur;
+                        struct command_stream rightTail = rightCur;
+                        int charNumLeft = 1;
+                        int charNumRight = 1;
+                        while (leftCur->previous != 0)
+                        {
+                                charNumLeft++;
+                                leftCur = leftCur->previous;
+                        }
+                        char *leftString = checked_malloc(charNumLeft + 2);
+                        int indexL = 0;
+                        while(leftCur != leftTail)
+                        {
+                                leftString[indexL] = leftCur->x;
+                                leftCur = leftCur->next;
+                                indexL++;
+                        }
+                        leftString[indexL] = leftCur->x;
+                        while (rightCur->previous != 0)
+                        {
+                                charNumRight++;
+                                rightCur = rightCur->previous;
+                        }
+                        char *rightString = checked_malloc(charNumRight + 2);
+                        int indexR = 0;
+                        while(rightCur != rightTail)
+                        {
+                                rightString[indexR] = rightCur->x;
+                                rightCur = rightCur->next;
+                                indexR++;
+                        }
+                        rightString[indexR] = rightCur->x;
+                        struct command *redCom;
+                        redCom = checked_malloc(sizeof(struct command));
+                        redCom->type = SIMPLE_COMMAND;
+                        redCom->input = leftString;
+                        redCom->output = rightString;
+                        redCom->status = 0;
+                        return *redCom;
+                }
+	}
 
 
 
