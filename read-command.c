@@ -44,7 +44,10 @@ make_command_stream (int (*get_next_byte) (void *),
     } else {
         tail -> x = curr_byte;
     }
-
+//    if(get_next_byte(get_next_byte_argument) == EOF) {
+	printf("btrbergergaer");
+	fflush(stdout);
+//    }
     while((curr_byte = get_next_byte(get_next_byte_argument)) != EOF) {
         if(curr_byte == '\n') {
 	    printf("butts");
@@ -88,7 +91,7 @@ make_command_stream (int (*get_next_byte) (void *),
 command_t
 read_command_stream (command_stream_t s)
 {
-	struct command_stream curr = s;
+	command_stream_t curr = s;
 	int inParen = 0; 
         while (curr != 0)
         {
@@ -130,9 +133,9 @@ read_command_stream (command_stream_t s)
 
   //error (1, 0, "command reading not yet implemented");
   return 0;
-}
+}*/
 
-*/
+
 
 command_t
 read_command_stream (command_stream_t s)
