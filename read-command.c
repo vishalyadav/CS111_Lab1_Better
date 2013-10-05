@@ -44,13 +44,16 @@ make_command_stream (int (*get_next_byte) (void *),
     } else {
         tail -> x = curr_byte;
     }
-//    if(get_next_byte(get_next_byte_argument) == EOF) {
-	printf("btrbergergaer");
-	fflush(stdout);
-//    }
+    if(get_next_byte(get_next_byte_argument) == EOF) {
+//	printf("ASS AND TITTIES         ");
+//	printf("%c", EOF);
+//	fflush(stdout);
+    }
     while((curr_byte = get_next_byte(get_next_byte_argument)) != EOF) {
+//	printf("titties");
+//	fflush(stdout);
         if(curr_byte == '\n') {
-	    printf("butts");
+//	    printf("butts");
             newline_spotted = 1;
             continue;
         }
@@ -82,6 +85,9 @@ make_command_stream (int (*get_next_byte) (void *),
         nextChar = 0;
         newline_spotted = 0;
     }
+
+//    printf("Tail->x end of first function: %c \n", tail->x);
+//    fflush(stdout);
 
     return tail;
 }
@@ -141,6 +147,8 @@ command_t
 read_command_stream (command_stream_t s)
 {
         command_stream_t curr = s;
+	printf("contents of s %c \n", s->x);
+	fflush(stdout);
         int inParen = 0;
         while (curr != 0)
         {
@@ -177,7 +185,7 @@ read_command_stream (command_stream_t s)
                         command_t orCom;
                        	orCom = checked_malloc(sizeof(command_t));
                         orCom->type = OR_COMMAND;
-                        orCom->u.command[0] = read_command_stream(curr->previous);
+                        orCom->u.command[0] = read_command_stream(curr->previous->previous);
                         orCom->u.command[1] = read_command_stream(s);
                         orCom->status = -1;
                         orCom->input = 0;
@@ -204,6 +212,7 @@ read_command_stream (command_stream_t s)
                         curr = curr->previous;
                 }
         }
+//	printf("passed first while \n");
 	curr = s;
 	while (curr != 0)
 	{
@@ -240,6 +249,7 @@ read_command_stream (command_stream_t s)
 			curr = curr->previous;
 		}
 	}
+//	printf("Passed second while \n");
 	curr = s;	//maybe move this parentheses part to the end, after redirect and word
 	while (curr != 0)
 	{
@@ -260,6 +270,7 @@ read_command_stream (command_stream_t s)
 			curr = curr->previous;
 		}
 	}
+//	printf("Passed third while \n");
 	curr = s;
 	int simpLength = 1;
 	while (curr != 0)
@@ -363,8 +374,10 @@ read_command_stream (command_stream_t s)
 			}
 		}
 	}
-
-		char *simpString = checked_malloc(simpLength + 2);
+//		printf("Passed last while. Fix your shit.\n");
+//		fflush(stdout);
+//		printf("Curr is: %c \n", curr -> x);
+		char *simpString = checked_malloc(simpLength+1);
                 int indexS = 0;
                 while(curr != s)
                 {
@@ -374,13 +387,33 @@ read_command_stream (command_stream_t s)
                 }
                 simpString[indexS] = curr->x;
 //		char *wordS = *simpString;     //POINTERS STOPPPPPPPPPPP
-		simpString[indexS+1] = '\0';
+		simpString[indexS+1] = 0;
+		//simpString[indexS+2] = EOF;
                 command_t simpCom;
                 simpCom = checked_malloc(sizeof(command_t));
                 simpCom->type = SIMPLE_COMMAND;
-                simpCom->u.word[0] = simpString;
+//		int word_index = 0;
+		simpCom->u.word = checked_malloc(sizeof(char*)*1);
+//		simpCom->u.word[0] = (char*) checked_malloc(simpLength+1);
+//		for(;word_index < indexS+1; word_index++) {
+//			printf("%c \n", simpString[word_index]);
+//			(simpCom->u.word)[0][word_index] = simpString[word_index];
+//			fflush(stdout);
+//		}
+//                simpCom->u.word[0] = simpString;
+//		char* string1 = "hello";
+		*(simpCom->u.word) = simpString;
+		(simpCom->u.word)[1] = '\0';
+//		free(simpString);
+//		strcpy(*simpCom->u.word, simpString);
+//		simpCom->u.word[0][0] = 'f';
+//		simpCom->u.word[0][1] = '\0';
+//		simpCom->u.word = &simpString;
                 simpCom->status = 0;
                 simpCom->input = 0;
                 simpCom->output = 0;
+//		printf("YOU BEST DONT REACH HERE");
+//		fflush(stdout);
+		s = 0;
                 return simpCom;
 } 
