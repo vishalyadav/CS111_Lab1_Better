@@ -29,14 +29,14 @@ make_command_stream (int (*get_next_byte) (void *),
   /* FIXME: Replace this with your implementation.  You may need to
      add auxiliary functions and otherwise modify the source code.
      You can also use external functions defined in the GNU C Library.  */
-    struct command_stream *tail;
-    tail = checked_malloc(sizeof(struct command_stream));
+    command_stream_t tail;
+    tail = checked_malloc(sizeof(command_stream_t));
     tail->next = 0;
     tail->previous = 0;
     tail->x = '\0';
     int newline_spotted = 0;
     char curr_byte;
-    struct command_stream *nextChar;
+    command_stream_t nextChar;
 
     curr_byte = get_next_byte(get_next_byte_argument);
     if(curr_byte == EOF) {
@@ -47,12 +47,13 @@ make_command_stream (int (*get_next_byte) (void *),
 
     while((curr_byte = get_next_byte(get_next_byte_argument)) != EOF) {
         if(curr_byte == '\n') {
+	    printf("butts");
             newline_spotted = 1;
             continue;
         }
         if(newline_spotted == 1) {
             newline_spotted = 0;
-            tail -> next = checked_malloc(sizeof(struct command_stream));
+            tail -> next = checked_malloc(sizeof(command_stream_t));
             nextChar = tail -> next;
             nextChar -> previous = tail;
             nextChar -> next = 0;
@@ -160,7 +161,7 @@ read_command_stream (command_stream_t s)
 			command_t andCom;
 			andCom = checked_malloc(sizeof(command_t));
 			andCom->type = AND_COMMAND;
-			andCom->u.command[0] = read_command_stream(curr->previous);
+			andCom->u.command[0] = read_command_stream(curr->previous->previous);
 			andCom->u.command[1] = read_command_stream(s);
 			andCom->status = -1;
 			andCom->input = 0;
@@ -350,8 +351,13 @@ read_command_stream (command_stream_t s)
                 }
 		else
 		{
-			curr = curr->previous;
+//			curr = curr -> previous;
 			simpLength++;
+			if(curr -> previous == 0) {
+				break;
+			} else {
+				curr = curr -> previous;
+			}
 		}
 	}
 
@@ -364,11 +370,12 @@ read_command_stream (command_stream_t s)
                         indexS++;
                 }
                 simpString[indexS] = curr->x;
-		char **wordS = *simpString;     //POINTERS STOPPPPPPPPPPP
+//		char *wordS = *simpString;     //POINTERS STOPPPPPPPPPPP
+		simpString[indexS+1] = '\0';
                 command_t simpCom;
                 simpCom = checked_malloc(sizeof(command_t));
                 simpCom->type = SIMPLE_COMMAND;
-                simpCom->u.word = wordS;
+                simpCom->u.word[0] = simpString;
                 simpCom->status = 0;
                 simpCom->input = 0;
                 simpCom->output = 0;
