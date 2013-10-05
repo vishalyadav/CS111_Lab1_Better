@@ -136,7 +136,7 @@ read_command_stream (command_stream_t s)
 command_t
 read_command_stream (command_stream_t s)
 {
-        struct command_stream curr = s;
+        command_stream_t curr = s;
         int inParen = 0;
         while (curr != 0)
         {
@@ -157,43 +157,43 @@ read_command_stream (command_stream_t s)
                 else if (curr->x == '&' && curr->previous->x == '&')
                 {
                         curr->next->previous = 0;
-			struct command *andCom;
-			andCom = checked_malloc(sizeof(struct command));
+			command_t andCom;
+			andCom = checked_malloc(sizeof(command_t));
 			andCom->type = AND_COMMAND;
 			andCom->u.command[0] = read_command_stream(curr->previous);
 			andCom->u.command[1] = read_command_stream(s);
 			andCom->status = -1;
 			andCom->input = 0;
 			andCom->output = 0;
-                        return *andCom;
+                        return andCom;
                 }
-                else if (curr ->x == '|' && curr->previous->x = '|')
+                else if (curr->x == '|' && curr->previous->x == '|')
                 {
                         curr->next->previous = 0;
-                        struct command *orCom;
-                       	orCom = checked_malloc(sizeof(struct command));
+                        command_t orCom;
+                       	orCom = checked_malloc(sizeof(command_t));
                         orCom->type = OR_COMMAND;
-                        orCom->command[0] = read_command_stream(curr->previous);
-                        orCom->command[1] = read_command_stream(s);
+                        orCom->u.command[0] = read_command_stream(curr->previous);
+                        orCom->u.command[1] = read_command_stream(s);
                         orCom->status = -1;
                         orCom->input = 0;
                         orCom->output = 0;
-                        return *orCom;
+                        return orCom;
 
 
                 }
                 else if (curr->x == ';' || curr->x == '\n')
                 {
                         curr->next->previous = 0;
-                        struct command *seqCom;
-                        seqCom = checked_malloc(sizeof(struct command));
+                        command_t seqCom;
+                        seqCom = checked_malloc(sizeof(command_t));
                         seqCom->type = SEQUENCE_COMMAND;
-                        seqCom->command[0] = read_command_stream(curr->previous);
-                        seqCom->command[1] = read_command_stream(s);
+                        seqCom->u.command[0] = read_command_stream(curr->previous);
+                        seqCom->u.command[1] = read_command_stream(s);
                         seqCom->status = -1;
                         seqCom->input = 0;
                         seqCom->output = 0;
-                        return *seqCom;
+                        return seqCom;
                 }
                 else
                 {
@@ -220,15 +220,15 @@ read_command_stream (command_stream_t s)
 		else if (curr->x == '|')
 		{
                         curr->next->previous = 0;
-                        struct command *pipeCom;
-                        pipeCom = checked_malloc(sizeof(struct command));
+                        command_t pipeCom;
+                        pipeCom = checked_malloc(sizeof(command_t));
                         pipeCom->type = PIPE_COMMAND;
-                        pipeCom->command[0] = read_command_stream(curr->previous);
-                        pipeCom->command[1] = read_command_stream(s);
+                        pipeCom->u.command[0] = read_command_stream(curr->previous);
+                        pipeCom->u.command[1] = read_command_stream(s);
                         pipeCom->status = -1;
                         pipeCom->input = 0;
                         pipeCom->output = 0;
-                        return *pipeCom;
+                        return pipeCom;
 
 		}
 		else
@@ -242,8 +242,8 @@ read_command_stream (command_stream_t s)
                 if (curr->x == ')')
                 {
                         curr = curr->previous;
-			struct command_stream parenTail = curr;
-                        while (curr->previous != '(')
+			command_stream_t parenTail = curr;
+                        while (curr->x != '(')
                         {
                                 curr = curr->previous;
                                 continue;
@@ -253,7 +253,7 @@ read_command_stream (command_stream_t s)
                 }
 		else
 		{
-			curr = curr->previous
+			curr = curr->previous;
 		}
 	}
 	curr = s;
@@ -262,10 +262,10 @@ read_command_stream (command_stream_t s)
 	{
 		if (curr->x == '<')
 		{
-			struct command_stream leftCur = curr->previous;
-			struct command_stream rightCur = s;
-			struct command_stream leftTail = leftCur;
-			struct command_stream rightTail = rightCur;
+			command_stream_t leftCur = curr->previous;
+			command_stream_t rightCur = s;
+			command_stream_t leftTail = leftCur;
+			command_stream_t rightTail = rightCur;
 			int charNumLeft = 1;
 			int charNumRight = 1;
 			while (leftCur->previous != 0)
@@ -296,20 +296,20 @@ read_command_stream (command_stream_t s)
                                 indexR++;
                         }
                         rightString[indexR] = rightCur->x;
-                        struct command *redCom;
-                        redCom = checked_malloc(sizeof(struct command));
+                        command_t redCom;
+                        redCom = checked_malloc(sizeof(command_t));
                         redCom->type = SIMPLE_COMMAND;
                         redCom->input = rightString;
 			redCom->output = leftString;
                         redCom->status = 0;
-                        return *redCom;
+                        return redCom;
 		}
                 else if (curr->x == '>')
                 {
-                        struct command_stream leftCur = curr->previous;
-                        struct command_stream rightCur = s;
-                        struct command_stream leftTail = leftCur;
-                        struct command_stream rightTail = rightCur;
+                        command_stream_t leftCur = curr->previous;
+                        command_stream_t rightCur = s;
+                        command_stream_t leftTail = leftCur;
+                        command_stream_t rightTail = rightCur;
                         int charNumLeft = 1;
                         int charNumRight = 1;
                         while (leftCur->previous != 0)
@@ -340,13 +340,13 @@ read_command_stream (command_stream_t s)
                                 indexR++;
                         }
                         rightString[indexR] = rightCur->x;
-                        struct command *redCom;
-                        redCom = checked_malloc(sizeof(struct command));
+                        command_t redCom;
+                        redCom = checked_malloc(sizeof(command_t));
                         redCom->type = SIMPLE_COMMAND;
                         redCom->input = leftString;
                         redCom->output = rightString;
                         redCom->status = 0;
-                        return *redCom;
+                        return redCom;
                 }
 		else
 		{
@@ -364,13 +364,13 @@ read_command_stream (command_stream_t s)
                         indexS++;
                 }
                 simpString[indexS] = curr->x;
-		char **wordS = simpString;
-                struct command *simpCom;
-                simpCom = checked_malloc(sizeof(struct command));
+		char **wordS = *simpString;     //POINTERS STOPPPPPPPPPPP
+                command_t simpCom;
+                simpCom = checked_malloc(sizeof(command_t));
                 simpCom->type = SIMPLE_COMMAND;
-                simpCom->word = wordS;
+                simpCom->u.word = wordS;
                 simpCom->status = 0;
                 simpCom->input = 0;
                 simpCom->output = 0;
-                return *simpCom;
+                return simpCom;
 } 
